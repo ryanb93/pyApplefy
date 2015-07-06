@@ -1,17 +1,25 @@
 Applefy
 =============
 
-Converts your Spotify playlist into an Apple Music playlist.
+Converts your Spotify playlist into an Apple music importable list of MP3s.
 
-usage
+Usage
 -----
+Firstly obtain the link to the Spotify playlist you want to add to iTunes and run the python script.
+
     ./applefy.py [username] [password] [spotify_url]
 
-examples
---------
-    "./jbripper.py user pass spotify:user:[user]:playlist:7HC9PMdSbwGBBn3EVTaCNx copies entire playlist
+This will create a folder containing the first second of each song within an MP3 file.
 
-prerequisites:
+Create your playlist in Apple Music/iTunes and drag the MP3 files into that playlist.
+
+Select all songs and right click in iTunes, add them to your "iCloud Music Library" so that they are synced with your account. You can now delete the MP3 files and then choose to redownload the music via your Apple Music subscription.
+
+Example
+--------
+    "./applyfy.py user pass spotify:user:[user]:playlist:7HC9PMdSbwGBBn3EVTaCNx copies entire playlist
+
+Prerequisites:
 --------------
 * libspotify (download at https://developer.spotify.com/technologies/libspotify/)
 
@@ -25,4 +33,4 @@ prerequisites:
 
 Credits
 ----
-Thanks to the spotifyripper application for base code.
+Based on spotifyripper.
