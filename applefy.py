@@ -36,7 +36,7 @@ def rip_init(session, track, playlist_name):
     if not os.path.exists(directory):
         os.makedirs(directory)
     printstr("ripping " + mp3file + " ...")
-    p = Popen("lame --silent -V 0 -h -r - \""+ directory + mp3file+"\"", stdin=PIPE, shell=True)
+    p = Popen("lame --silent -h -r --freeformat 320 - \""+ directory + mp3file+"\"", stdin=PIPE, shell=True)
     pipe = p.stdin
     if rawpcm:
       pcmfile = open(directory + pcmfile, 'w')
@@ -104,7 +104,6 @@ class RipperThread(threading.Thread):
                 self.ripper.load_track(track)
                 rip_init(session, track, str(playlist))
                 self.ripper.play()
-                time.sleep(1)
                 end_of_track.clear() # TODO check if necessary
                 rip_terminate(session, track)
                 rip_id3(session, track, str(playlist))
