@@ -23,7 +23,7 @@ Prerequisites:
 --------------
 * libspotify (download at https://developer.spotify.com/technologies/libspotify/)
 
-* pyspotify (sudo pip install -U pyspotify, requires python-dev)
+* pyspotify 1.11 (latest version is incompatible) (sudo pip install -U pyspotify==1.11, requires python-dev) 
 
 * spotify binary appkey (download at developer.spotify.com and copy to wd, requires premium!)
 
