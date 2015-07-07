@@ -40,6 +40,6 @@ Thumbs.db
 # appkey and temp data #
 ####################################
 spotify_appkey.key
-*.mp3
+*/*.mp3
 tmp/*
 *~

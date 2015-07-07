@@ -4,6 +4,7 @@
 from subprocess import call, Popen, PIPE
 from spotify import Link, Image
 from jukebox import Jukebox, container_loaded
+from shutil import copyfile
 import os, sys
 import threading
 import time
@@ -26,8 +27,9 @@ def shell(cmdline): # execute shell commands (unicode support)
 def rip_init(session, track, playlist_name):
     global pipe, ripping, pcmfile, rawpcm
     num_track = "%02d" % (track.index(),)
+    
+    silent = "5sec.mp3"
     mp3file = track.name()+".mp3"
-    pcmfile = track.name()+".pcm"
 
     print("playlist name: " + playlist_name)
     directory = os.getcwd() + "/" + playlist_name + "/"
@@ -35,29 +37,9 @@ def rip_init(session, track, playlist_name):
 
     if not os.path.exists(directory):
         os.makedirs(directory)
-    printstr("ripping " + mp3file + " ...")
-    p = Popen("lame --silent -h -r --freeformat 320 - \""+ directory + mp3file+"\"", stdin=PIPE, shell=True)
-    pipe = p.stdin
-    if rawpcm:
-      pcmfile = open(directory + pcmfile, 'w')
+    printstr("creating empty file: " + mp3file + " ...")
+    copyfile(silent, directory + mp3file)
     ripping = True
-
-
-def rip_terminate(session, track):
-    global ripping, pipe, pcmfile, rawpcm
-    if pipe is not None:
-        print(' done!')
-        pipe.close()
-    if rawpcm:
-        pcmfile.close()
-    ripping = False
-
-def rip(session, frames, frame_size, num_frames, sample_type, sample_rate, channels):
-    if ripping:
-        printstr('.')
-        pipe.write(frames);
-        if rawpcm:
-          pcmfile.write(frames)
 
 def rip_id3(session, track, playlist_name): # write ID3 data
     num_track = "%02d" % (track.index(),)
@@ -103,9 +85,6 @@ class RipperThread(threading.Thread):
         for track in itrack:
                 self.ripper.load_track(track)
                 rip_init(session, track, str(playlist))
-                self.ripper.play()
-                end_of_track.clear() # TODO check if necessary
-                rip_terminate(session, track)
                 rip_id3(session, track, str(playlist))
 
         self.ripper.disconnect()
