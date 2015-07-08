@@ -10,7 +10,7 @@ Setup
     ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
     
     #Install stuff
-    brew install python wget
+    brew install python wget portaudio
 
     #Install pip
     easy_install pip
@@ -29,6 +29,8 @@ Setup
  
     #Install pyspotify
     pip install pyspotify==1.11
+    
+    pip install pyaudio --allow-unverified pyaudio --allow-external pyaudio
     
     #Download project from GitHub
     git clone git://github.com/ryanb93/Applefy
