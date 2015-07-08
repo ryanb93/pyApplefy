@@ -1,7 +1,46 @@
 Applefy
-=============
+=======
 
 Converts your Spotify playlist into an Apple music importable list of MP3s.
+
+Setup
+-----
+
+    #Install homebrew
+    ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    
+    #Install stuff
+    brew install python wget
+
+    #Install pip
+    easy_install pip
+    
+    #Download libspotify
+    wget https://developer.spotify.com/download/libspotify/libspotify-12.1.51-Darwin-universal.zip
+    unzip libspotify-12.1.51-Darwin-universal.zip
+    rm libspotify-12.1.51-Darwin-universal.zip
+
+    #Copy framework
+    sudo cp -R libspotify-12.1.51-Darwin-universal/libspotify.framework /Library/Frameworks
+    sudo ln -s /Library/Frameworks/libspotify.framework/libspotify /usr/local/lib/libspotify.dylib
+
+    #Install eyeD3 for metadata tagging
+    pip install eyeD3 --allow-external eyeD3 --allow-unverified eyeD3
+ 
+    #Install pyspotify
+    pip install pyspotify==1.11
+    
+    #Download project from GitHub
+    git clone git://github.com/ryanb93/Applefy
+
+    #Grab a developer key from Spotify (requires Premium)
+    open https://devaccount.spotify.com/my-account/keys/
+    
+    #Copy the key into Applefy directory.
+    cp ~/Downloads/spotify_appkey.key spotify_appkey.key
+    
+    
+
 
 Usage
 -----
@@ -19,18 +58,6 @@ Example
 --------
     "./applyfy.py user pass spotify:user:[user]:playlist:7HC9PMdSbwGBBn3EVTaCNx copies entire playlist
 
-Prerequisites:
---------------
-* libspotify (download at https://developer.spotify.com/technologies/libspotify/)
-
-* pyspotify 1.11 (latest version is incompatible) (sudo pip install -U pyspotify==1.11, requires python-dev) 
-
-* spotify binary appkey (download at developer.spotify.com and copy to wd, requires premium!)
-
-* lame (sudo apt-get install lame)
-
-* eyeD3 (sudo pip install eyeD3 --allow-external eyeD3 --allow-unverified eyeD3)
-
 Credits
 ----
-Based on spotifyripper.
+Based on [spotifyripper](https://github.com/robbeofficial/spotifyripper).

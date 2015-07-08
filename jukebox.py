@@ -89,35 +89,6 @@ class JukeboxUI(cmd.Cmd, threading.Thread):
         duration = '%02d:%02d' % (minutes, seconds)
         return duration
 
-    def do_play(self, line):
-        if not line:
-            self.jukebox.play()
-            return
-        try:
-            if line.startswith("spotify:"):
-                # spotify url
-                l = Link.from_string(line)
-                if not l.type() == Link.LINK_TRACK:
-                    print "You can only play tracks!"
-                    return
-                self.jukebox.load_track(l.as_track())
-            else:
-                try:
-                    playlist, track = map(int, line.split(' ', 1))
-                    self.jukebox.load(playlist, track)
-                except ValueError:
-                    try:
-                        playlist = int(line)
-                        self.jukebox.load_playlist(playlist)
-                    except ValueError:
-                        print("Usage: play [track_link] | "
-                              "[playlist] [track] | [playlist]")
-                        return
-        except SpotifyError as e:
-            print "Unable to load track:", e
-            return
-        self.jukebox.play()
-
     def do_browse(self, line):
         if not line or not line.startswith("spotify:"):
             print "Invalid id provided"
@@ -174,128 +145,11 @@ class JukeboxUI(cmd.Cmd, threading.Thread):
 
             self.jukebox.search(line, search_finished)
 
-    def do_queue(self, line):
-        if not line:
-            for playlist, track in self.jukebox._queue:
-                print playlist, track
-            return
-        try:
-            playlist, track = map(int, line.split(' ', 1))
-        except ValueError:
-            print "Usage: play playlist track"
-            return
-        self.jukebox.queue(playlist, track)
-
-    def do_stop(self, line):
-        self.jukebox.stop()
-
-    def do_pause(self, line):
-        self.jukebox.pause()
-
-    def do_next(self, line):
-        self.jukebox.next()
-
     def emptyline(self):
         pass
 
-    def do_watch(self, line):
-        if not line:
-            print """Usage: watch [playlist]
-You will be notified when tracks are added, moved or removed from the
-playlist."""
-        else:
-            try:
-                p = int(line)
-            except ValueError:
-                print "That's not a number!"
-                return
-            if p < 0 or p >= len(self.jukebox.ctr):
-                print "That's out of range!"
-                return
-            self.jukebox.watch(self.jukebox.ctr[p])
-
-    def do_unwatch(self, line):
-        if not line:
-            print "Usage: unwatch [playlist]"
-        else:
-            try:
-                p = int(line)
-            except ValueError:
-                print "That's not a number!"
-                return
-            if p < 0 or p >= len(self.jukebox.ctr):
-                print "That's out of range!"
-                return
-            self.jukebox.watch(self.jukebox.ctr[p], True)
-
-    def do_toplist(self, line):
-        usage = "Usage: toplist (albums|artists|tracks) (GB|FR|..|all|current)"
-        if not line:
-            print usage
-        else:
-            args = line.split(' ')
-            if len(args) != 2:
-                print usage
-            else:
-                self.jukebox.toplist(*args)
-
     def do_shell(self, line):
         self.jukebox.shell()
-
-    def do_add_new_playlist(self, line):
-        if not line:
-            print "Usage: add_new_playlist <name>"
-        else:
-            self.jukebox.ctr.add_new_playlist(
-                line.decode('utf-8'))
-
-    def do_remove_playlist(self, line):
-        if not line:
-            print "Usage: remove_playlist <index> [<count>]"
-        else:
-            c = 1
-            try:
-                args = line.split(' ')
-                p = int(args[0])
-                if len(args) > 1:
-                    c = int(args[1])
-            except ValueError:
-                print "that's not a number!"
-                return
-            if p < 0 or p + c > len(self.jukebox.ctr):
-                print "That's out of range!"
-                return
-            for i in range(p + c - 1, p - 1, -1):
-                if self.jukebox.ctr[i].is_loaded():
-                    print "Removing playlist #%d" % (i)
-                    self.jukebox.ctr.remove_playlist(i)
-                    time.sleep(0.5)
-                c = c-1
-
-    def do_add_to_playlist(self, line):
-        usage = "Usage: add_to_playlist <playlist_index> <insert_point>" + \
-                " <search_result_indecies>"
-        if not line:
-            print usage
-            return
-        args = line.split(' ')
-        if len(args) < 3:
-            print usage
-        else:
-            if not self.results:
-                print "No search results"
-            else:
-                index = int(args.pop(0))
-                insert = int(args.pop(0))
-                tracks = self.results.tracks()
-                for i in args:
-                    for a in tracks[int(i)].artists():
-                        print u'{0}. {1} - {2} '.format(
-                            i, a.name(), tracks[int(i)].name())
-                print u'adding them to {0} '.format(
-                    self.jukebox.ctr[index].name())
-                self.jukebox.ctr[index].add_tracks(
-                    insert, [tracks[int(i)] for i in args])
 
     do_ls = do_list
     do_EOF = do_quit
@@ -407,82 +261,6 @@ class Jukebox(SpotifySessionManager):
             if i == 0:
                 continue
             self._queue.append((playlist, i))
-
-    def queue(self, playlist, track):
-        if self.playing:
-            self._queue.append((playlist, track))
-        else:
-            print 'Loading %s', track.name()
-            self.load(playlist, track)
-            self.play()
-
-    def play(self):
-        self.audio.start()
-        self.session.play(1)
-        print "Playing"
-        self.playing = True
-
-    def pause(self):
-        self.session.play(0)
-        print "Pausing"
-        self.playing = False
-        self.audio.pause()
-
-    def stop(self):
-        self.session.play(0)
-        print "Stopping"
-        self.playing = False
-        self.audio.stop()
-
-    def music_delivery_safe(self, *args, **kwargs):
-        return self.audio.music_delivery(*args, **kwargs)
-
-    def next(self):
-        self.stop()
-        if self._queue:
-            t = self._queue.pop(0)
-            self.load(*t)
-            self.play()
-        else:
-            self.stop()
-
-    def end_of_track(self, sess):
-        self.audio.end_of_track()
-
-    def search(self, *args, **kwargs):
-        self.session.search(*args, **kwargs)
-
-    def browse(self, link, callback):
-        if link.type() == link.LINK_ALBUM:
-            browser = self.session.browse_album(link.as_album(), callback)
-            while not browser.is_loaded():
-                time.sleep(0.1)
-            for track in browser:
-                print track.name()
-        if link.type() == link.LINK_ARTIST:
-            browser = ArtistBrowser(link.as_artist())
-            while not browser.is_loaded():
-                time.sleep(0.1)
-            for album in browser:
-                print album.name()
-
-    def watch(self, p, unwatch=False):
-        if not unwatch:
-            print "Watching playlist: %s" % p.name()
-            self.playlist_manager.watch(p)
-        else:
-            print "Unatching playlist: %s" % p.name()
-            self.playlist_manager.unwatch(p)
-
-    def toplist(self, tl_type, tl_region):
-        print repr(tl_type)
-        print repr(tl_region)
-
-        def callback(tb, ud):
-            for i in xrange(len(tb)):
-                print '%3d: %s' % (i+1, tb[i].name())
-
-        ToplistBrowser(tl_type, tl_region, callback)
 
     def shell(self):
         import code
