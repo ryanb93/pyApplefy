@@ -1,4 +1,4 @@
-Applefy
+pyApplefy
 =======
 
 Converts your Spotify playlist into an Apple music importable list of MP3s.
